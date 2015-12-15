@@ -1150,22 +1150,36 @@ namespace Afterthought.Amender
 
 					// Lazy Initializer and/or After Get
 					if (propertyAmendment.LazyInitializer != null || propertyAmendment.AfterGet != null)
-					{
-						// After Get
-						if (propertyAmendment.AfterGet != null)
-						{
-							// Load this pointer onto stack
-							il.Emit(OperationCode.Ldarg_0);
-
-							// Load property name onto stack
-							il.Emit(OperationCode.Ldstr, propertyDef.Name.Value);
-						}
+                    { 
 
 						// Emit the original property getter instructions
 						il.EmitUntilReturn();
 
-						// Lazy Initializer
-						if (propertyAmendment.LazyInitializer != null)
+                        // After Get
+                        if (propertyAmendment.AfterGet != null)
+                        {
+                            var currentValue = new LocalDefinition() { Name = host.NameTable.GetNameFor("_cv_"), Type = propertyDef.Type };
+
+                            if (methodBody.LocalVariables == null)
+                                methodBody.LocalVariables = new List<ILocalDefinition>();
+
+                            methodBody.LocalVariables.Add(currentValue);
+
+                            // Store the current value in a local variable
+                            il.Emit(OperationCode.Stloc, currentValue);
+
+                            // Load this pointer onto stack
+                            il.Emit(OperationCode.Ldarg_0);
+
+                            // Load property name onto stack
+                            il.Emit(OperationCode.Ldstr, propertyDef.Name.Value);
+
+                            // Load the current value
+                            il.Emit(OperationCode.Ldloc, currentValue);
+                        }
+
+                        // Lazy Initializer
+                        if (propertyAmendment.LazyInitializer != null)
 						{
 							// Add local variable to store the current value of the property
 							var currentValue = new LocalDefinition() { Name = host.NameTable.GetNameFor("_cv_"), Type = propertyDef.Type };
