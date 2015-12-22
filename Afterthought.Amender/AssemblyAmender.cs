@@ -1040,11 +1040,14 @@ namespace Afterthought.Amender
 			// Create an IL generator to amend the operations
 			var il = new ILAmender(host, methodBody);
 
-			// Property Get
-			if (methodBody.MethodDefinition.Name.Value.StartsWith("get_") || methodBody.MethodDefinition.Name.Value.Contains(".get_"))
+            if (il.Operations.Last().OperationCode == OperationCode.Throw)
+                return;
+
+            // Property Get
+            if (methodBody.MethodDefinition.Name.Value.StartsWith("get_") || methodBody.MethodDefinition.Name.Value.Contains(".get_"))
 			{
-				// Getter for new or existing property
-				if (propertyAmendment.Getter != null)
+                // Getter for new or existing property
+                if (propertyAmendment.Getter != null)
 				{
 					// Clear the original method body
 					il.Operations.Clear();
