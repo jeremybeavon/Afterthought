@@ -2081,7 +2081,8 @@ namespace Afterthought.Amender
 			if (type.IsArray)
 			{
 				ITypeDefinition elementTypeDef = ResolveType(type.GetElementType());
-				typeDef = Vector.GetVector(elementTypeDef, host.InternFactory);
+				int arrayRank = type.GetArrayRank();
+				typeDef = arrayRank > 1 ? (ITypeDefinition)Matrix.GetMatrix(elementTypeDef, (uint)arrayRank, host.InternFactory) : Vector.GetVector(elementTypeDef, host.InternFactory);
 			}
 
 			// Generic types
