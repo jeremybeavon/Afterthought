@@ -1515,8 +1515,6 @@ namespace Afterthought.Amender
 				il.GoToEndOfOperations();
 
 				CallMethodDelegate(methodBody, methodAmendment.After, false, il, implement, MethodDelegateType.After, context, null);
-
-				il.Emit(OperationCode.Ret);
 			}
 
 			// Emit the remaining operations
