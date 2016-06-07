@@ -1988,7 +1988,7 @@ namespace Afterthought.Amender
 					il.Emit(OperationCode.Ldloc, result);
 
 					// Box result values if necessary
-					if (delegateType.HasFlag(MethodDelegateType.HasResultParameter) && methodDef.Type.IsValueType)
+					if (delegateType.HasFlag(MethodDelegateType.HasResultParameter) && methodDef.Type.IsValueType && !(targetMethodDef is IGenericMethodInstance))
 						il.Emit(OperationCode.Box, methodDef.Type);
 				}
 
@@ -1996,11 +1996,11 @@ namespace Afterthought.Amender
 				il.Emit(OperationCode.Call, targetMethodDef);
 
 				// Unbox result values if necessary
-				if (delegateType.HasFlag(MethodDelegateType.Function) && (delegateType.HasFlag(MethodDelegateType.After) || delegateType.HasFlag(MethodDelegateType.Catch)) && methodDef.Type.IsValueType)
+				if (delegateType.HasFlag(MethodDelegateType.Function) && (delegateType.HasFlag(MethodDelegateType.After) || delegateType.HasFlag(MethodDelegateType.Catch)) && methodDef.Type.IsValueType && !(targetMethodDef is IGenericMethodInstance))
 					il.Emit(OperationCode.Unbox_Any, methodDef.Type);
 
 				// Handle method delegates that potentially return updated arguments
-				if (updateArguments)
+				/*if (updateArguments)
 				{
 					// Update the method arguments with the result of the invocation
 					foreach (var parameter in methodDef.Parameters)
@@ -2021,7 +2021,7 @@ namespace Afterthought.Amender
 						// Update the actual argument
 						il.Emit(OperationCode.Starg, parameter);
 					}
-				}
+				}*/
 			}
 
 			// Explicit syntax
@@ -2459,6 +2459,11 @@ namespace Afterthought.Amender
 				// Verify that the return type is compatible
 				if (delegateType.HasFlag(MethodDelegateType.Function) && !delegateType.HasFlag(MethodDelegateType.Before) && !TypeHelper.TypesAreEquivalent(methodDef.Type, targetMethodDef.Type))
 					throw new ArgumentException("The specified return type is not valid.");
+			}
+
+			if (method.IsGenericMethod)
+			{
+				targetMethodDef = new GenericMethodInstance(targetMethodDef, new[] { methodDef.Type }, host.InternFactory);
 			}
 
 			return targetMethodDef;
